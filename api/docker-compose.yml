@@ -1,0 +1,50 @@
+version: "3.7"
+services:
+  db:
+    image: mysql:8.0.30
+    command: "--default-authentication-plugin=mysql_native_password"
+    restart: always
+    secrets:
+      - db_root_password
+      - db_user_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - tree_bridge
+    environment:
+      - MYSQL_DATABASE=favorite_tree
+      - MYSQL_USER=developer
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_user_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
+    expose:
+      - "3306"
+  api:
+    image: favorite-tree-api
+    build: .
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - SQLALCHEMY_DATABASE_URI_FILEPATH=/home/web/.secrets/sql_uri.txt
+    stdin_open: true
+    tty: true
+    depends_on:
+      - db
+    networks:
+      - tree_bridge
+    volumes:
+      - ./:/api
+      - ./secrets:/home/web/.secrets
+      - ./secrets/sql_uri.txt:/home/web/.secrets/sql_uri.txt
+volumes:
+  db-data:
+secrets:
+  db_root_password:
+    file: ./secrets/db_root_password.txt
+  db_user_password:
+    file: ./secrets/db_user_password.txt
+networks:
+  tree_bridge:
+    driver: bridge

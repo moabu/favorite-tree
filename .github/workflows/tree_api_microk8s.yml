@@ -1,0 +1,40 @@
+name: microk8s
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 6
+      matrix:
+        istio: ["true", "false"]
+        #hack: ["false", "false"]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@master
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4.1.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo python3 -m pip install --upgrade pip
+        sudo pip3 install setuptools --upgrade
+        sudo pip3 install pyOpenSSL --upgrade
+        sudo pip3 install requests --upgrade
+
+    - name: Test demo setup
+      id: start_up_script
+      run: |
+          ip=$(ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
+          chmod u+x automation/install_demo_tree_api.sh
+          sudo bash ./automation/install_demo_tree_api.sh my.ecosia.org true $ip ${{ matrix.istio }}
+          sudo bash ./automation/analyze_test_microk8s_setup.sh

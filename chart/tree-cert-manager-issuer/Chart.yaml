@@ -1,0 +1,15 @@
+# License terms and conditions:
+# https://www.apache.org/licenses/LICENSE-2.0
+apiVersion: v2
+name: treeissuer
+version: 0.0.1
+kubeVersion: ">=v1.21.0-0"
+description: Tree Cert-Manager issuer.
+keywords:
+  - treeissuer
+sources:
+  - https://cert-manager.io/docs/configuration/
+maintainers:
+  - name: Mohammad Abudayyeh
+    email: mo@techtative.io
+    url: https://github.com/moabu
