@@ -37,4 +37,4 @@ jobs:
           ip=$(ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
           chmod u+x automation/install_demo_tree_api.sh
           sudo bash ./automation/install_demo_tree_api.sh my.ecosia.org true $ip ${{ matrix.istio }}
-          sudo bash ./automation/analyze_test_microk8s_setup.sh
+          #sudo bash ./automation/analyze_demo_tree_api.sh
