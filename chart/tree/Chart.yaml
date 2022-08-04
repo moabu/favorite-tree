@@ -1,0 +1,16 @@
+kubeVersion: '>=v1.21.0-0'
+apiVersion: v2
+icon: >-
+  https://img.rawpixel.com/s3fs-private/rawpixel_images/website_content/pd20-270284-chim.png?auto=&bg=transparent&con=3&cs=srgb&dpr=1&fm=png&ixlib=php-3.1.0&mark=rawpixel-watermark.png&markalpha=90&markpad=13&markscale=10&markx=25&q=75&usm=15&vib=3&w=1400&s=e3e82c6c1339a166ff6cf706eb4f1599
+home: https://techtative.io
+sources:
+  - https://github.com/moabu/tree/api
+maintainers:
+  - name: moabu
+    email: mo@techtative.io
+description: Tree Api that returns my favorite tree in json.
+name: favorite-tree
+version: 1.0.0-dev
+dependencies:
+  - name: tree-api
+    version: 1.0.0-dev

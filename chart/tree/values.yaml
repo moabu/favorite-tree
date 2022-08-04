@@ -1,0 +1,128 @@
+# -- Tree Api that returns my favorite tree in json.
+tree-api:
+  # -- Configure the HorizontalPodAutoscaler
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 50
+    # -- metrics if targetCPUUtilizationPercentage is not set
+    metrics: []
+    # -- Scaling Policies
+    behavior: {}
+  # -- Add custom normal and secret envs to the service
+  usrEnvs:
+    # -- Add custom normal envs to the service
+    # variable1: value1
+    normal: {}
+    # -- Add custom secret envs to the service
+    # variable1: value1
+    secret: {}
+  # -- Add custom dns policy
+  dnsPolicy: ""
+  # -- Add custom dns config
+  dnsConfig: {}
+  image:
+    # -- Image pullPolicy to use for deploying.
+    pullPolicy: IfNotPresent
+    # -- Image  to use for deploying.
+    repository:  abudayyehwork/tree-api
+    # -- Image  tag to use for deploying.
+    tag: 1.0.0_dev
+    # -- Image Pull Secrets
+    pullSecrets: [ ]
+  # -- Service replica number.
+  replicas: 1
+  # -- Resource specs.
+  resources:
+    limits:
+      # -- CPU limit.
+      cpu: 500m
+      # -- Memory limit.
+      memory: 500Mi
+    requests:
+      # -- CPU request.
+      cpu: 500m
+      # -- Memory request.
+      memory: 500Mi
+  service:
+    # -- The name of the tree-api port within the tree-api service. Please keep it as default.
+    name: tree-api
+    # -- Port of the tree-api service. Please keep it as default.
+    port: 5000
+    # -- Default set to None If you want to make sure that connections from a particular client are passed to the same Pod each time, you can select the session affinity based on the client's IP addresses by setting this to ClientIP
+    sessionAffinity: None
+    # -- the maximum session sticky time if sessionAffinity is ClientIP
+    sessionAffinityConfig:
+      clientIP:
+        timeoutSeconds: 10800
+  # -- Configure the liveness healthcheck for the tree-api if needed.
+  livenessProbe:
+    # -- Executes the python3 healthcheck.
+    httpGet:
+      # -- http readiness probe endpoint
+      path: /tree
+      port: 5000
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+  # -- Configure the readiness healthcheck for the tree-api if needed.
+  readinessProbe:
+    httpGet:
+      # -- http readiness probe endpoint
+      path: /tree
+      port: 5000
+    initialDelaySeconds: 25
+    periodSeconds: 25
+    timeoutSeconds: 5
+  volumes: []
+  # -- Configure any additional volumesMounts that need to be attached to the containers
+  volumeMounts: []
+
+  # -- Additional labels that will be added across all resources definitions in the format of {mylabel: "myapp"}
+  additionalLabels: { }
+  # -- Additional annotations that will be added across all resources  in the format of {cert-manager.io/issuer: "letsencrypt-prod"}. key app is taken
+  additionalAnnotations: { }
+  # -- Boolean flag if enabled will strip resources requests and limits from deployments.
+  testEnviroment: true
+  ingress:
+    alb:
+      # -- Activates ALB ingress
+      enabled: false
+    # -- enable istio sidecars
+    istio:
+      # -- Boolean flag that enables using istio side cars with Janssen services.
+      enabled: false
+    nginx:
+      ingresClass: nginx
+      # -- Boolean flag that enables using ingress definition that integrates with Nginx.
+      enabled: true
+    # -- tree api ingress resource labels. key app is taken
+    treeApiLabels: { }
+    # -- tree api ingress resource additional annotations.
+    treeApiAdditionalAnnotations: { }
+    path: /
+    hosts:
+      - my.ecosia.org
+    # -- Secrets holding HTTPS CA cert and key.
+    tls:
+      - secretName: tls-certificate
+        hosts:
+          - my.ecosia.org
+  configmap:
+    flaskApp: main.core:app
+    # -- Sets the flask env. development, production, testing, staging
+    flaskEnv: development
+    # -- Sets the guncorn log level info, error, debug, trace
+    guncornLogLevel: debug
+    # -- file path of the sql uri string containing the connection params
+    sqlalchemyDatabaseUriFilepath: /sql_secrets/uri
+    # -- secret holding the sql uri
+    sqlalchemyDatabaseSecretName: sql-secret-uri
+  # -- ditches the API and disables the deployment and instead parses the ingress to display the favorite tree.
+  # works only with nginx ingress
+  hack:
+    # -- boolean flag that disables the deployment and instead parses the ingress to display the favorite tree.
+    enabled: false
+    # -- Your favorite tree
+    favoriteTree: Olive Tree

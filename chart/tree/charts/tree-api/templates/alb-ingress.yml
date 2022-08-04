@@ -1,0 +1,53 @@
+{{ if .Values.ingress.alb.enabled -}}
+# License terms and conditions for the Favorite Tree API:
+# https://www.apache.org/licenses/LICENSE-2.0
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "tree-api.fullname" . }}
+  labels:
+    app: {{ include "tree-api.fullname" . }}
+{{- if .Values.ingress.treeApiLabels }}
+{{ toYaml .Values.ingress.treeApiLabels | indent 4 }}
+{{- end }}
+  annotations:
+    alb.ingress.kubernetes.io/auth-session-timeout: '3600'
+    alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60,stickiness.type=lb_cookie
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '10'
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    alb.ingress.kubernetes.io/actions.main-page-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "Path":"/tree", "StatusCode": "HTTP_301"}}'
+{{- if .Values.ingress.treeApiAdditionalAnnotations }}
+{{ toYaml .Values.ingress.treeApiAdditionalAnnotations | indent 4 }}
+{{- end }}
+spec:
+  rules:
+  {{- range .Values.ingress.hosts }}
+  {{- $host := . -}}
+  {{- with $ }}
+    - host: {{ $host | quote }}
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: ssl-redirect
+              port:
+                name: use-annotation
+        - path: /
+          pathType: Exact
+          backend:
+            service:
+              name: main-page-redirect
+              port: use-annotation
+        - path: /tree
+          pathType: Exact
+          backend:
+            service:
+              name: {{ .Values.service.name }}
+              port:
+                number: {{ .Values.service.port }}
+  {{- end }}
+  {{- end }}
+{{- end -}}

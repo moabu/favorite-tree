@@ -1,0 +1,30 @@
+name: docker-compose
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@master
+
+    - name: Test demo setup using docker compose
+      id: run_docker_compose
+      working-directory: api
+      run: |
+        mkdir secrets
+        openssl rand -out secrets/db_root_password.txt -base64 12
+        openssl rand -out secrets/db_user_password.txt -base64 12
+        PASSWORD=$(<secrets/db_user_password.txt)
+        echo "mysql+pymysql://developer:$PASSWORD@db:3306/favorite_tree?charset=utf8" > secrets/sql_uri.txt
+        docker compose up --build -d
+        docker ps
+        sleep 20
+        curl http://0.0.0.0:5000/tree -o fav_tree.json
+        cat fav_tree.json

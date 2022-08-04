@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema#",
+  "type": "object",
+  "properties": {
+    "tree-api": {
+      "description": "Tree Api that returns my favorite tree in json.",
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/tree-api-enabled"
+    }
+  ],
+  "definitions": {
+    "tree-api-enabled": {
+      "if": {
+        "properties": {
+          "global": {
+            "properties": {
+              "tree-api": {
+                "properties": {
+                  "enabled": {
+                    "const": "true"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "tree-api": {
+            "required": [
+              "image",
+              "replicas",
+              "resources"
+            ],
+            "properties": {
+              "hpa": {
+                "description": "Configure the HorizontalPodAutoscaler",
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "minReplicas": {
+                    "type": "integer"
+                  },
+                  "maxReplicas": {
+                    "type": "integer"
+                  },
+                  "targetCPUUtilizationPercentage": {
+                    "type": "integer"
+                  },
+                  "metrics": {
+                    "description": "metrics if targetCPUUtilizationPercentage is not set",
+                    "type": "array"
+                  },
+                  "behavior": {
+                    "description": "Scaling Policies",
+                    "type": "object"
+                  }
+                }
+              },
+              "usrEnvs": {
+                "description": "Add custom normal and secret envs to the service",
+                "type": "object",
+                "properties": {
+                  "normal": {
+                    "description": "Add custom normal envs to the service",
+                    "type": "object"
+                  },
+                  "secret": {
+                    "description": "Add custom secret envs to the service",
+                    "type": "object"
+                  }
+                }
+              },
+              "dnsPolicy": {
+                "description": "Add custom dns policy",
+                "type": "string",
+                "pattern": "^(Default|ClusterFirst|ClusterFirstWithHostNet|None|)$"
+              },
+              "dnsConfig": {
+                "description": "Add custom dns config",
+                "type": "object"
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "pullPolicy": {
+                    "description": "Image pullPolicy to use for deploying.",
+                    "type": "string",
+                    "pattern": "^(Always|Never|IfNotPresent)$"
+                  },
+                  "repository": {
+                    "description": "Image  to use for deploying",
+                    "type": "string",
+                    "pattern": "^[a-z0-9-_/]+$"
+                  },
+                  "tag": {
+                    "description": "Image  tag to use for deploying.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9-_.]+$"
+                  }
+                }
+              },
+              "replicas": {
+                "description": "Service replica number.",
+                "type": "integer"
+              },
+              "resources": {
+                "description": "Resource specs.",
+                "type": "object",
+                "properties": {
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "description": "CPU limit.",
+                        "type": "string",
+                        "pattern": "^[0-9m]+$"
+                      },
+                      "memory": {
+                        "description": "Memory limit.",
+                        "type": "string",
+                        "pattern": "^[0-9Mi]+$"
+                      }
+                    }
+                  },
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "description": "CPU request.",
+                        "type": "string",
+                        "pattern": "^[0-9m]+$"
+                      },
+                      "memory": {
+                        "description": "Memory request.",
+                        "type": "string",
+                        "pattern": "^[0-9Mi]+$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "else": true
+    }
+  }
+}

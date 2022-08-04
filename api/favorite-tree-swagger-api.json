@@ -1,0 +1,267 @@
+{
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Error name"
+          },
+          "code": {
+            "type": "integer",
+            "description": "Error code"
+          },
+          "errors": {
+            "type": "object",
+            "description": "Errors"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          }
+        }
+      },
+      "PaginationMetadata": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "first_page": {
+            "type": "integer"
+          },
+          "last_page": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "previous_page": {
+            "type": "integer"
+          },
+          "next_page": {
+            "type": "integer"
+          }
+        }
+      },
+      "Tree": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "favorite": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "favorite",
+          "name"
+        ]
+      },
+      "UpdateTree": {
+        "type": "object",
+        "properties": {
+          "favorite": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "favorite"
+        ]
+      }
+    },
+    "responses": {
+      "DEFAULT_ERROR": {
+        "description": "Default error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NOT_MODIFIED": {
+        "description": "Not Modified"
+      },
+      "UNPROCESSABLE_ENTITY": {
+        "description": "Unprocessable Entity",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "PRECONDITION_FAILED": {
+        "description": "Precondition Failed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "PRECONDITION_REQUIRED": {
+        "description": "Precondition Required",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "IF_NONE_MATCH": {
+        "name": "If-None-Match",
+        "in": "header",
+        "description": "Tag to check against",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "IF_MATCH": {
+        "name": "If-Match",
+        "in": "header",
+        "required": true,
+        "description": "Tag to check against",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "headers": {
+      "ETAG": {
+        "description": "Tag for the returned entry",
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "paths": {
+    "/tree": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tree"
+                },
+                "example": {
+                  "uid": "127327384893",
+                  "name": "Jane Doe",
+                  "favorite": "Yellow Birch"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETAG"
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DEFAULT_ERROR"
+          },
+          "304": {
+            "$ref": "#/components/responses/NOT_MODIFIED"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IF_NONE_MATCH"
+          }
+        ],
+        "summary": "get favorite tree\n:return: tree object : JSON",
+        "tags": [
+          "Tree"
+        ]
+      },
+      "patch": {
+        "responses": {
+          "422": {
+            "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+          },
+          "201": {
+            "description": "Created",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETAG"
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DEFAULT_ERROR"
+          },
+          "412": {
+            "$ref": "#/components/responses/PRECONDITION_FAILED"
+          },
+          "428": {
+            "$ref": "#/components/responses/PRECONDITION_REQUIRED"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTree"
+              },
+              "example": {
+                "name": "Jillian Parker"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IF_MATCH"
+          }
+        ],
+        "summary": "update favorite tree\n:param data: TreeSchema\n:return:",
+        "tags": [
+          "Tree"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Favorite Tree API",
+    "version": "v1"
+  },
+  "tags": [
+    {
+      "name": "Tree",
+      "description": ""
+    }
+  ],
+  "openapi": "3.0.2"
+}

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tree-api.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    APP_NAME: tree-api
+{{ include "tree-api.labels" . | indent 4 }}
+{{- if .Values.additionalLabels }}
+{{ toYaml .Values.additionalLabels | indent 4 }}
+{{- end }}
+{{- if .Values.additionalAnnotations }}
+  annotations:
+{{ toYaml .Values.additionalAnnotations | indent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-{{ include "tree-api.name" . }}
+  template:
+    metadata:
+      labels:
+        APP_NAME: tree-api
+        app: {{ .Release.Name }}-{{ include "tree-api.name" . }}
+    spec:
+    {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      dnsPolicy: {{ .Values.dnsPolicy | quote }}
+    {{- with .Values.dnsConfig }}
+      dnsConfig:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      containers:
+      - name: {{ include "tree-api.name" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        env:
+          {{- include "tree-api.usr-envs" . | indent 12 }}
+          {{- include "tree-api.usr-secret-envs" . | indent 12 }}
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: {{ .Values.service.name }}
+          containerPort: {{ .Values.service.port }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-config-cm
+        volumeMounts:
+        {{- with .Values.volumeMounts }}
+{{- toYaml . | nindent 10 }}
+        {{- end }}
+          - name: cn-sql-uri
+            mountPath: {{ .Values.configmap.sqlalchemyDatabaseUriFilepath }}
+            subPath: uri
+        livenessProbe:
+{{- toYaml .Values.livenessProbe | nindent 10 }}
+        readinessProbe:
+{{- toYaml .Values.readinessProbe | nindent 10 }}
+        {{- if .Values.testEnviroment }}
+        resources: {}
+        {{- else }}
+        resources:
+{{- toYaml .Values.resources | nindent 10 }}
+        {{- end }}
+      volumes:
+      {{- with .Values.volumes }}
+{{- toYaml . | nindent 8 }}
+      {{- end }}
+        - name: cn-sql-uri
+          secret:
+            secretName: {{ .Values.configmap.sqlalchemyDatabaseSecretName }}
+            items:
+              - key: uri
+                path: uri
+      
